@@ -14,6 +14,9 @@ app.use(express.json());
 app.get("/health", (req, res) => res.send("Server is running"));
 const authRoute = require("./routes/authRoute");
 app.use("/auth",authRoute);
+const categoryRoute = require("./routes/categoryRoute");
+app.use("/category",categoryRoute);
+
 const productRoute = require("./routes/productRoute");
 app.use("/product",productRoute);
 
