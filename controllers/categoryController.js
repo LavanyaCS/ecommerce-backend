@@ -81,10 +81,10 @@ exports.deleteCategory = async (req, res) => {
 // Get All Categories (Global)
 exports.getCategory = async (req, res) => {
   try {
-    const categories = await Category.find({ user: req.user._id }); // ✅ filtered
+    const category = await Category.find({ user: req.user._id }); // ✅ filtered
     res.status(200).json({
       message: "Category List",
-      categoryInfo: categories,
+      category,
     });
   } catch (error) {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
