@@ -81,15 +81,19 @@ exports.deleteCategory = async (req, res) => {
 // Get All Categories (Global)
 exports.getCategory = async (req, res) => {
   try {
-    const category = await Category.find({ user: req.user._id }); // ✅ filtered
-    res.status(200).json({
-      message: "Category List",
-      category,
-    });
+    const category = await Category.find();
+
+    if (!category || category.length === 0) {
+      return res.status(400).json({ message: "No Category is found" });
+    }
+
+    res.status(200).json({ message: "Category List", categoryInfo: category });
+
   } catch (error) {
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    res.status(500).json({ message: `Internal Server Error ${error.message}` });
   }
 };
+
 
 // Get Category By ID
 exports.getCategoryById = async (req, res) => {
