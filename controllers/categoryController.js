@@ -3,8 +3,8 @@ const Category = require("../models/categoryModel");
 // Create Category
 exports.createCategory = async (req, res) => {
   try {
-    const { title, description } = req.body;
-    if (!title || !description) {
+    const { title, description,image } = req.body;
+    if (!title || !description || !image) {
       return res.status(400).json({ message: "All fields are required" });
     }
  const categoryExists = await Category.findOne({ title });
@@ -13,7 +13,7 @@ exports.createCategory = async (req, res) => {
     }
     const category = await Category.create({
       title,
-      description,
+      description,image,
       user: req.user._id,
     });
 

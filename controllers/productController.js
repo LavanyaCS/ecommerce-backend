@@ -2,9 +2,9 @@ const Product = require("../models/productModel");
 
 exports.createProduct = async (req, res) => {
   try {
-    const { title, description, quantity, price, category } = req.body;
+    const { title, description, quantity, price, image ,category } = req.body;
 
-    if (!title || !description || !quantity || !price || !category) {
+    if (!title || !description || !quantity || !price || !image || !category) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
