@@ -1,4 +1,5 @@
 const Category = require("../models/categoryModel");
+const Product = require("../models/productModel");
 
 // Create Category
 exports.createCategory = async (req, res) => {
@@ -67,7 +68,12 @@ exports.deleteCategory = async (req, res) => {
         .status(404)
         .json({ message: "No Category found with this ID for the user" });
     }
-
+const productCount = await Product.countDocuments({ category: req.params.id });
+if (productCount > 0) {
+  return res.status(400).json({
+    message: `Cannot delete category. There are ${productCount} product(s) under this category.`,
+  });
+}
     res.status(200).json({
       message: "Category Deleted Successfully",
       categoryInfo: category,
