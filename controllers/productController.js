@@ -16,7 +16,7 @@ exports.createProduct = async (req, res) => {
       title,
       description,
       quantity,
-      price,
+      price,image,
       category,
       user: req.user._id
     });
