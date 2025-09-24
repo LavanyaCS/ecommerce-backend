@@ -1,5 +1,5 @@
 const express = require("express");
-const { createProduct, updateProduct, deleteProduct, getProductById, getProduct } = require("../controllers/productController");
+const { createProduct, updateProduct, deleteProduct, getProductById, getProduct, getProductsByCategory } = require("../controllers/productController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const router = express.Router();
 
@@ -8,6 +8,8 @@ router.put("/:id",authMiddleware(["admin","seller"]),updateProduct);
 router.delete("/:id",authMiddleware(["admin","seller"]),deleteProduct);
 router.get("/",getProduct);
 router.get("/:id",getProductById);
+//Based on category filter
+router.get("/category/:categoryId", getProductsByCategory);
 
 
 module.exports = router;

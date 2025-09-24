@@ -109,3 +109,24 @@ exports.getProductById = async (req, res) => {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
+// controller/productController.js
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    const products = await Product.find({ category: categoryId })
+      .populate("category", "title description");
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: "No products found in this category" });
+    }
+
+    res.status(200).json({ 
+      message: "Products by category", 
+      productInfo: products 
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+  }
+};
