@@ -90,17 +90,22 @@ exports.getProduct = async (req, res) => {
   }
 };
 
+// Get single product by ID
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.find({ user: req.user._id }).populate("category", "title description");
+    const { id } = req.params; // ✅ product id from URL
 
-    if (!product || product.length === 0) {
-      return res.status(400).json({ message: "No Product is found" });
+    const product = await Product.findById(id).populate("category", "title description");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    res.status(200).json({ message: "Product List", productInfo: product });
-
+    res.status(200).json({
+      message: "Product fetched successfully",
+      productInfo: product,
+    });
   } catch (error) {
-    res.status(500).json({ message: `Internal Server Error ${error.message}` });
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
