@@ -16,10 +16,12 @@ exports.addReview = async (req, res) => {
         const review = await Review.create({
             rating, comment, product, user:req.user._id
         });
+// Populate the user field to get username/email
+        const populatedReview = await review.populate("user", "username email");
 
         res.status(201).json({
             message: "Review Added Successfully",
-            review
+            review: populatedReview
         });
     }
 
