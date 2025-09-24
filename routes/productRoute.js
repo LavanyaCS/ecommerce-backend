@@ -7,7 +7,7 @@ router.post("/",authMiddleware(["admin","seller"]),createProduct);
 router.put("/:id",authMiddleware(["admin","seller"]),updateProduct);
 router.delete("/:id",authMiddleware(["admin","seller"]),deleteProduct);
 router.get("/",getProduct);
-router.get("/all",authMiddleware(["admin","seller"]),getProductById);
+router.get("/:id",getProductById);
 
 
 module.exports = router;
