@@ -14,9 +14,9 @@ router.use(authMiddleware());
 ///
 
 router.get("/", getCart);
-router.post("/add", addToCart);
-router.put("/update", updateCartItem);
-router.delete("/remove", removeCartItem);
+router.post("/", addToCart);
+router.put("/:id", updateCartItem);
+router.delete("/:id", removeCartItem);
 router.delete("/clear", clearCart);
 
 module.exports = router;
