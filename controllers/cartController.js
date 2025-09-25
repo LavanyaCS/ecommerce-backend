@@ -40,13 +40,17 @@ exports.addToCart = async (req, res) => {
         cart.items.push({ product: productId, quantity });
       }
 
-      // Recalculate totalPrice
-      const productIds = cart.items.map(item => item.product);
-      const products = await Product.find({ _id: { $in: productIds } });
-      cart.totalPrice = cart.items.reduce((acc, item) => {
-        const prod = products.find(p => p._id.toString() === item.product.toString());
-        return acc + prod.price * item.quantity;
-      }, 0);
+// Fetch all products in cart
+const productIds = cart.items.map(item => item.product);
+const products = await Product.find({ _id: { $in: productIds } });
+
+// Recalculate totalPrice safely
+cart.totalPrice = cart.items.reduce((acc, item) => {
+  const prod = products.find(p => p._id.toString() === item.product.toString());
+  if (!prod) return acc; // skip if product no longer exists
+  return acc + prod.price * item.quantity;
+}, 0);
+     
     }
 
     await cart.save();
@@ -54,41 +58,45 @@ exports.addToCart = async (req, res) => {
     res.status(200).json({ message: "Item added to cart", cart });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: err.message, stack: err.stack });
     res.status(500).json({ message: "Server Error" });
   }
 };
-
-// Update item quantity
 exports.updateCartItem = async (req, res) => {
   try {
-    const productId = req.params.id;  // ✅ read from URL param
+    const productId = req.params.id;
     const { quantity } = req.body;
 
     if (!quantity || quantity < 1)
       return res.status(400).json({ message: "Invalid quantity" });
 
-    const cart = await Cart.findOne({ user: req.user._id });
+    // Populate items.product to easily access price
+    const cart = await Cart.findOne({ user: req.user._id }).populate("items.product");
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    // Find the item to update, skip null products
+    const itemIndex = cart.items.findIndex(
+      item => item.product && item.product._id.toString() === productId
+    );
     if (itemIndex === -1) return res.status(404).json({ message: "Product not found in cart" });
 
+    // Update quantity
     cart.items[itemIndex].quantity = quantity;
 
-    // Recalculate totalPrice
-    cart.totalPrice = 0;
-    for (const item of cart.items) {
-      const prod = await Product.findById(item.product);
-      cart.totalPrice += prod.price * item.quantity;
-    }
+    // Remove items where product no longer exists
+    cart.items = cart.items.filter(item => item.product !== null);
+
+    // Recalculate totalPrice safely
+    cart.totalPrice = cart.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
     await cart.save();
-    const populatedCart = await cart.populate("items.product");
-    res.status(200).json({ message: "Cart updated", cart: populatedCart });
+    res.status(200).json({ message: "Cart updated", cart });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error(err);
+    res.status(500).json({ message: err.message, stack: err.stack });
   }
 };
+
 
 // Remove item
 exports.removeCartItem = async (req, res) => {
@@ -120,15 +128,20 @@ exports.removeCartItem = async (req, res) => {
 // Clear cart
 exports.clearCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user._id });
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
+    let cart = await Cart.findOne({ user: req.user._id });
 
-    cart.items = [];
-    cart.totalPrice = 0;
-    await cart.save();
+    // Create a new empty cart if none exists
+    if (!cart) {
+      cart = await Cart.create({ user: req.user._id, items: [], totalPrice: 0 });
+    } else {
+      cart.items = [];
+      cart.totalPrice = 0;
+      await cart.save();
+    }
 
     res.status(200).json({ message: "Cart cleared", cart });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
