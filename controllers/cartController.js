@@ -17,10 +17,8 @@ exports.getCart = async (req, res) => {
 // Add item to cart
 exports.addToCart = async (req, res) => {
   try {
-    // const { productId, quantity } = req.body;
-const { product: productId, quantity } = req.body;
-
-    if (!productId || quantity < 1) 
+    const { product: productId, quantity } = req.body;
+    if (!productId || quantity < 1)
       return res.status(400).json({ message: "Invalid product or quantity" });
 
     const product = await Product.findById(productId);
@@ -29,50 +27,45 @@ const { product: productId, quantity } = req.body;
     let cart = await Cart.findOne({ user: req.user._id });
 
     if (!cart) {
-      // Create new cart
       cart = await Cart.create({
         user: req.user._id,
         items: [{ product: productId, quantity }],
-        totalPrice: product.price * quantity
+        totalPrice: product.price * quantity,
       });
     } else {
       const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
-      
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += quantity;
       } else {
         cart.items.push({ product: productId, quantity });
       }
 
-      // Fetch all products in cart at once
+      // Recalculate totalPrice
       const productIds = cart.items.map(item => item.product);
       const products = await Product.find({ _id: { $in: productIds } });
-
-      // Recalculate totalPrice
       cart.totalPrice = cart.items.reduce((acc, item) => {
         const prod = products.find(p => p._id.toString() === item.product.toString());
-        return acc + (prod.price * item.quantity);
+        return acc + prod.price * item.quantity;
       }, 0);
     }
 
     await cart.save();
     cart = await cart.populate("items.product");
     res.status(200).json({ message: "Item added to cart", cart });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-// Update item quantity in cart
+// Update item quantity
 exports.updateCartItem = async (req, res) => {
   try {
-    // const { productId, quantity } = req.body;
-    
-const { product: productId, quantity } = req.body;
+    const productId = req.params.id;  // ✅ read from URL param
+    const { quantity } = req.body;
 
-    if (!productId || quantity < 1) return res.status(400).json({ message: "Invalid product or quantity" });
+    if (!quantity || quantity < 1)
+      return res.status(400).json({ message: "Invalid quantity" });
 
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
@@ -82,7 +75,7 @@ const { product: productId, quantity } = req.body;
 
     cart.items[itemIndex].quantity = quantity;
 
-    // recalculate totalPrice
+    // Recalculate totalPrice
     cart.totalPrice = 0;
     for (const item of cart.items) {
       const prod = await Product.findById(item.product);
@@ -97,12 +90,10 @@ const { product: productId, quantity } = req.body;
   }
 };
 
-// Remove item from cart
+// Remove item
 exports.removeCartItem = async (req, res) => {
   try {
-    const { productId } = req.body;
-    if (!productId) return res.status(400).json({ message: "Product ID is required" });
-
+    const productId = req.params.id; // ✅ read from URL param
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
@@ -111,7 +102,7 @@ exports.removeCartItem = async (req, res) => {
 
     cart.items.splice(itemIndex, 1);
 
-    // recalculate totalPrice
+    // Recalculate totalPrice
     cart.totalPrice = 0;
     for (const item of cart.items) {
       const prod = await Product.findById(item.product);
