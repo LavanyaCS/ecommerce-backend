@@ -8,7 +8,12 @@ const dbConnection = require("./config/dbConnection");
 const port = process.env.PORT || 8081;
 //cors
 const cors = require("cors");
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin:[ "http://localhost:5173",  "https://todo-frontend-mcjo.netlify.app"],  // your Netlify domain
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
 //Route
 app.get("/health", (req, res) => res.send("Server is running"));
