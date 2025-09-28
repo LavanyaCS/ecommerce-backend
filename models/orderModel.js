@@ -7,11 +7,17 @@ const orderSchema = new mongoose.Schema(
     orderItems: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-        quantity: { type: Number, required: true, min: 1 },
+        title: { type: String, required: true },
+        image: { type: String },
+        quantity: { type: Number, required: true },
         price: { type: Number, required: true }
       }
     ],
-    // reference to Address schema
+
+    subtotal: { type: Number, required: true },
+    shippingCost: { type: Number, default: 0 },
+    totalAmount: { type: Number, required: true },
+
     shippingAddress: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Address",
@@ -35,10 +41,16 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: "pending"
     },
-    totalAmount: { type: Number, required: true },
+
     deliveredAt: { type: Date }
   },
   { timestamps: true }
 );
+
+
+// Indexes for faster lookups
+orderSchema.index({ user: 1 });
+orderSchema.index({ orderStatus: 1 });
+orderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Order", orderSchema);

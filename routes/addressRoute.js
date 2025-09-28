@@ -9,13 +9,14 @@ const {
   setDefaultAddress
 } = require("../controllers/addressController");
 
-// All routes require login
+// Apply authentication to all routes
 router.use(authMiddleware());
 
+// Routes
 router.get("/", getAddresses);
 router.post("/", addAddress);
+router.put("/default/:addressId", setDefaultAddress); 
 router.put("/:addressId", updateAddress);
 router.delete("/:addressId", deleteAddress);
-router.put("/default/:addressId", setDefaultAddress);
 
 module.exports = router;
