@@ -130,3 +130,18 @@ exports.getProductsByCategory = async (req, res) => {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
+
+// Get products only for the logged-in seller
+exports.getProductsBySeller = async (req, res) => {
+  try {
+    const products = await Product.find({ user: req.user._id })
+      .populate("category", "title description");
+
+    res.status(200).json({
+      message: "Products by seller",
+      productInfo: products,
+    });
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+  }
+};
