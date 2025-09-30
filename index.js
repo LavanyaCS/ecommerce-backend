@@ -37,6 +37,8 @@ app.use("/cart",cartRoute);
 
 const addressRoute = require("./routes/addressRoute");
 app.use("/address",addressRoute);
+const adminRoutes = require("./routes/adminRoutes");
+app.use("/admin", adminRoutes);
 
 dbConnection();
 app.listen(port,() => {
