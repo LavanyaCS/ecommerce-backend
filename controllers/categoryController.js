@@ -30,18 +30,44 @@ exports.createCategory = async (req, res) => {
 };
 
 // Update Category
+// exports.updateCategory = async (req, res) => {
+//   try {
+//     const category = await Category.findOneAndUpdate(
+//       { _id: req.params.id, user: req.user._id },
+//       req.body,
+//       { new: true }
+//     );
+
+//     if (!category) {
+//       return res
+//         .status(404)
+//         .json({ message: "No Category found with this ID for the user" });
+//     }
+
+//     res.status(200).json({
+//       message: "Category Updated Successfully",
+//       categoryInfo: category,
+//     });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: `Internal Server Error: ${error.message}` });
+//   }
+// };
 exports.updateCategory = async (req, res) => {
   try {
-    const category = await Category.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
       req.body,
       { new: true }
     );
 
     if (!category) {
-      return res
-        .status(404)
-        .json({ message: "No Category found with this ID for the user" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
     res.status(200).json({
@@ -49,41 +75,69 @@ exports.updateCategory = async (req, res) => {
       categoryInfo: category,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
 // Delete Category
+// exports.deleteCategory = async (req, res) => {
+//   try {
+//     const category = await Category.findOneAndDelete({
+//       _id: req.params.id,
+//       user: req.user._id,
+//     });
+
+//     if (!category) {
+//       return res
+//         .status(404)
+//         .json({ message: "No Category found with this ID for the user" });
+//     }
+// const productCount = await Product.countDocuments({ category: req.params.id });
+// if (productCount > 0) {
+//   return res.status(400).json({
+//     message: `Cannot delete category. There are ${productCount} product(s) under this category.`,
+//   });
+// }
+//     res.status(200).json({
+//       message: "Category Deleted Successfully",
+//       categoryInfo: category,
+//     });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: `Internal Server Error: ${error.message}` });
+//   }
+// };
 exports.deleteCategory = async (req, res) => {
   try {
-    const category = await Category.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const category = await Category.findById(req.params.id);
 
     if (!category) {
-      return res
-        .status(404)
-        .json({ message: "No Category found with this ID for the user" });
+      return res.status(404).json({ message: "Category not found" });
     }
-const productCount = await Product.countDocuments({ category: req.params.id });
-if (productCount > 0) {
-  return res.status(400).json({
-    message: `Cannot delete category. There are ${productCount} product(s) under this category.`,
-  });
-}
+
+    const productCount = await Product.countDocuments({ category: req.params.id });
+    if (productCount > 0) {
+      return res.status(400).json({
+        message: `Cannot delete category. There are ${productCount} product(s) under this category.`,
+      });
+    }
+
+    await category.deleteOne();
+
     res.status(200).json({
       message: "Category Deleted Successfully",
       categoryInfo: category,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
+
 // Get All Categories (Global)
 exports.getCategory = async (req, res) => {
   try {

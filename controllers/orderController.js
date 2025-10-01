@@ -100,30 +100,28 @@ exports.getOrderById = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { status } = req.body;
+    const { orderStatus } = req.body;
 
-    const allowedStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
-    if (!allowedStatuses.includes(status)) {
-      return res.status(400).json({ message: "Invalid order status" });
+    if (!orderStatus) {
+      return res.status(400).json({ message: "Order status is required" });
     }
 
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    order.orderStatus = status;
-    if (status === "delivered") {
+    order.orderStatus = orderStatus;
+
+    if (orderStatus === "delivered") {
       order.deliveredAt = new Date();
-      order.paymentStatus = "paid"; // Optional: mark payment as paid on delivery
     }
 
     await order.save();
-
     res.status(200).json({ message: "Order status updated", order });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: `Internal Server Error: ${err.message}` });
   }
 };
-
 // ✅ Delete order (admin)
 exports.deleteOrder = async (req, res) => {
   try {
