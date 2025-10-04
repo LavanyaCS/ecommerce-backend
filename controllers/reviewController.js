@@ -106,3 +106,24 @@ exports.getReview = async (req, res) => {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
+
+exports.getAllReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .populate("user", "username")  // only get user's name
+      .select("rating comment user") // only include these fields
+      .sort({ createdAt: -1 });  // newest first
+
+    // Format response (optional)
+    const formatted = reviews.map(r => ({
+      userName: r.user?.username || "Anonymous", 
+      rating: r.rating,
+      comment: r.comment
+    }));
+
+    res.status(200).json(formatted);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};

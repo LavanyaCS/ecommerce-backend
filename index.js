@@ -37,9 +37,14 @@ app.use("/cart",cartRoute);
 
 const addressRoute = require("./routes/addressRoute");
 app.use("/address",addressRoute);
-const adminRoutes = require("./routes/adminRoutes");
-app.use("/admin", adminRoutes);
 
+const adminRoute = require("./routes/adminRoute");
+app.use("/admin",adminRoute);
+//Payment
+const contactRoute = require("./contact");// Contact route
+app.use("/api/contact", contactRoute);
+const paymentRoutes = require("./routes/paymentRoute");
+app.use("/payment", paymentRoutes);
 dbConnection();
 app.listen(port,() => {
     console.log(`Server is running on port ${port}`);

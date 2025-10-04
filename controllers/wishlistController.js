@@ -36,7 +36,11 @@ exports.removeWishlist = async (req, res) => {
 // Get all wishlist items for user
 exports.getWishlist = async (req, res) => {
     try {
-        const wishlist = await Wishlist.find({ user: req.user._id }).populate("product");
+        // const wishlist = await Wishlist.find({ user: req.user._id }).populate("product");
+const wishlist = await Wishlist.find({ user: req.user._id }).populate("product");
+const filtered = wishlist.filter(item => item.product != null);
+res.status(200).json({ message: "Wishlist retrieved successfully", wishlist: filtered });
+
         res.status(200).json({ message: "Wishlist retrieved successfully", wishlist });
     } catch (error) {
         res.status(500).json({ message: `Internal Server Error: ${error.message}` });

@@ -9,8 +9,8 @@ exports.getAllProducts = async (req, res) => {
     const products = await Product.find()
       .populate("category", "title description")
       .populate("user", "name email role"); // seller info
-
-    res.status(200).json({ message: "All products", productInfo: products });
+console.log(res.data);
+    res.status(200).json({ message: "All products", products: products });
   } catch (error) {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }

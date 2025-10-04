@@ -25,7 +25,7 @@ exports.createProduct = async (req, res) => {
 
     res.status(201).json({
       message: "Product Created Successfully",
-      productInfo: populatedProduct
+      products: populatedProduct
     });
 
   } catch (error) {
@@ -47,7 +47,7 @@ exports.updateProduct = async (req, res) => {
 
     res.status(200).json({
       message: "Product Updated successfully",
-      productInfo: product
+      products: product
     });
 
   } catch (error) {
@@ -67,7 +67,7 @@ exports.deleteProduct = async (req, res) => {
 
     res.status(200).json({
       message: "Product Deleted successfully",
-      productInfo: product
+      products: product
     });
 
   } catch (error) {
@@ -77,16 +77,31 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.find().populate("category", "title description");
+    const { sortBy = "createdAt", order = "desc", search = "", category } = req.query;
 
-    if (!product || product.length === 0) {
-      return res.status(400).json({ message: "No Product is found" });
+    const sortOption = {};
+    sortOption[sortBy] = order === "asc" ? 1 : -1;
+
+    // Build query
+    const query = {};
+    if (search) {
+      // Search by title (case-insensitive)
+      query.title = { $regex: search, $options: "i" };
     }
 
-    res.status(200).json({ message: "Product List", productInfo: product });
+    if (category) {
+      query.category = category; // filter by category if provided
+    }
 
-  } catch (error) {
-    res.status(500).json({ message: `Internal Server Error ${error.message}` });
+    const products = await Product.find(query).sort(sortOption).populate("category", "title");
+
+    res.status(200).json({
+      message: "Products fetched successfully",
+      count: products.length,
+      products,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -103,7 +118,7 @@ exports.getProductById = async (req, res) => {
 
     res.status(200).json({
       message: "Product fetched successfully",
-      productInfo: product,
+      products: product,
     });
   } catch (error) {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
@@ -123,7 +138,7 @@ exports.getProductsByCategory = async (req, res) => {
 
     res.status(200).json({ 
       message: "Products by category", 
-      productInfo: products 
+      products: products 
     });
 
   } catch (error) {
@@ -139,7 +154,7 @@ exports.getProductsBySeller = async (req, res) => {
 
     res.status(200).json({
       message: "Products by seller",
-      productInfo: products,
+      products: products,
     });
   } catch (error) {
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });

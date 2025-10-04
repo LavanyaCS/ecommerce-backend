@@ -5,7 +5,8 @@ const Product = require("../models/productModel");
 exports.createOrder = async (req, res) => {
   try {
     const { orderItems, shippingAddress, paymentMethod, subtotal, totalAmount } = req.body;
-
+console.log("User:", req.user._id);
+console.log("Order Payload:", req.body);
     if (!orderItems || !orderItems.length) {
       return res.status(400).json({ message: "Order Items are required" });
     }
