@@ -108,7 +108,7 @@ exports.getProduct = async (req, res) => {
 // Get single product by ID
 exports.getProductById = async (req, res) => {
   try {
-    const { id } = req.params; // ✅ product id from URL
+    const { id } = req.params; //product id from URL
 
     const product = await Product.findById(id).populate("category", "title description");
 

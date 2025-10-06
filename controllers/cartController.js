@@ -101,7 +101,7 @@ exports.updateCartItem = async (req, res) => {
 // Remove item
 exports.removeCartItem = async (req, res) => {
   try {
-    const productId = req.params.id; // ✅ read from URL param
+    const productId = req.params.id; //read from URL param
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 

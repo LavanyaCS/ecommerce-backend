@@ -57,52 +57,53 @@ exports.getDashboardStats = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    // Total Revenue (only paid/completed orders)
+    // Total Revenue (only paid orders)
     const totalRevenueAgg = await Order.aggregate([
-      { $match: { paymentStatus: "paid" } }, // only paid orders
-      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      { $match: { paymentStatus: "paid" } },
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
     ]);
     const totalRevenue = totalRevenueAgg[0]?.total || 0;
 
-    // Total Users & Sellers
-const totalUsers = await User.countDocuments({ role: "buyer" });
-const totalSellers = await User.countDocuments({ role: "seller" });
-
+    // Total Users, Sellers, Admins
+    const totalUsers = await User.countDocuments({ role: "buyer" });
+    const totalSellers = await User.countDocuments({ role: "seller" });
+    const totalAdmins = await User.countDocuments({ role: "admin" });
 
     // Total Products
     const totalProducts = await Product.countDocuments();
 
-    // Products per Seller
+    // Products per Seller (aggregation)
     const productsPerSellerAgg = await Product.aggregate([
       {
         $group: {
-          _id: "$user", // your product schema uses "user" for seller reference
-          count: { $sum: 1 },
-        },
+          _id: "$user",
+          count: { $sum: 1 }
+        }
       },
       {
         $lookup: {
           from: "users",
           localField: "_id",
           foreignField: "_id",
-          as: "sellerInfo",
-        },
+          as: "sellerInfo"
+        }
       },
       { $unwind: { path: "$sellerInfo", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           sellerName: { $ifNull: ["$sellerInfo.name", "Unknown Seller"] },
-          count: 1,
-        },
-      },
+          count: 1
+        }
+      }
     ]);
 
     res.status(200).json({
       totalRevenue,
       totalUsers,
       totalSellers,
+      totalAdmins,
       totalProducts,
-      productsPerSeller: productsPerSellerAgg,
+      productsPerSeller: productsPerSellerAgg
     });
   } catch (err) {
     console.error(err);
