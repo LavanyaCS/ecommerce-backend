@@ -36,7 +36,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
+      { _id: req.params.id },
       req.body,
       { new: true }
     ).populate("category", "title description");
@@ -58,7 +58,7 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findOneAndDelete(
-      { _id: req.params.id, user: req.user._id }
+      { _id: req.params.id}
     ).populate("category", "title description");
 
     if (!product) {
